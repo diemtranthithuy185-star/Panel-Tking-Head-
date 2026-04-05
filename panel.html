@@ -55,9 +55,10 @@ async function login(){
   if(!key){toast("Nhập key!");return;}
 
   try{
-    let res7=await fetch("https://YOUR_GITHUB_USER.github.io/panel/key7day.json");
+    // Fetch key từ GitHub trực tiếp
+    let res7=await fetch("https://raw.githubusercontent.com/diemtranthithuy185-star/Panel-Tking-Head-/main/key7day.json");
     let key7day=await res7.json();
-    let resper=await fetch("https://YOUR_GITHUB_USER.github.io/panel/keypermanent.json");
+    let resper=await fetch("https://raw.githubusercontent.com/diemtranthithuy185-star/Panel-Tking-Head-/main/keypermanent.json");
     let keyper=await resper.json();
 
     let keyData=key7day.find(k=>k.code===key) || keyper.find(k=>k.code===key);
