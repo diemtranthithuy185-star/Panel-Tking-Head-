@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TKing Head Panel</title>
+<style>
+body{background:black;color:white;font-family:sans-serif;display:flex;justify-content:center;align-items:flex-start;padding-top:40px;margin:0;}
+.container{width:360px;}
+.box{border:3px solid #00ffff;box-shadow:0 0 20px #00ffff,0 0 40px #00ffff;border-radius:20px;padding:20px;margin-bottom:20px;text-align:center;}
+input{width:75%;padding:8px;border-radius:10px;border:none;outline:none;margin:8px 0;font-size:14px;}
+button{padding:8px 15px;border:none;border-radius:10px;background:#00ffff;color:black;font-weight:bold;cursor:pointer;box-shadow:0 0 10px #00ffff;transition:0.3s;font-size:14px;width:auto;min-width:120px;}
+button:hover{box-shadow:0 0 20px #00ffff,0 0 40px #00ffff;}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;margin:8px 0;}
+.switch{position:relative;display:inline-block;width:50px;height:25px;}
+.switch input{display:none;}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;transition:.4s;border-radius:25px;}
+.slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:white;transition:.4s;border-radius:50%;}
+input:checked + .slider{background:#00ffcc;}
+input:checked + .slider:before{transform:translateX(24px);}
+.toast{position:fixed;top:20px;right:20px;background:#00ffcc;color:black;padding:10px;border-radius:10px;font-weight:bold;opacity:0;transition:opacity .3s;z-index:999;}
+#expireText{color:#00ffcc;margin-top:5px;}
+</style>
+</head>
+<body>
+<div class="container">
+<div id="toast" class="toast"></div>
+<div class="box" id="loginBox">
+<h2>Đăng nhập Panel</h2>
+<input id="loginKey" placeholder="Nhập key"><br>
+<button onclick="login()">Đăng nhập</button>
+</div>
+<div id="panelBox" class="box" style="display:none">
+<h2>TKing Head Panel ⚡</h2>
+<p id="expireText"></p>
+<hr>
+<div class="toggle-row"><span>Aimlock head</span><label class="switch"><input type="checkbox" onchange="toggle('Aimlock head',this.checked)"><span class="slider"></span></label></div>
+<div class="toggle-row"><span>Nhẹ tâm</span><label class="switch"><input type="checkbox" onchange="toggle('Nhẹ tâm',this.checked)"><span class="slider"></span></label></div>
+<div class="toggle-row"><span>Nhạy tâm</span><label class="switch"><input type="checkbox" onchange="toggle('Nhạy tâm',this.checked)"><span class="slider"></span></label></div>
+<div class="toggle-row"><span>Aim cổ nhẹ</span><label class="switch"><input type="checkbox" onchange="toggle('Aim cổ nhẹ',this.checked)"><span class="slider"></span></label></div>
+<div class="toggle-row"><span>Fix lag</span><label class="switch"><input type="checkbox" onchange="toggle('Fix lag',this.checked)"><span class="slider"></span></label></div>
+<div class="toggle-row"><span>Fix rung</span><label class="switch"><input type="checkbox" onchange="toggle('Fix rung',this.checked)"><span class="slider"></span></label></div>
+<div class="toggle-row"><span>Fix lố</span><label class="switch"><input type="checkbox" onchange="toggle('Fix lố',this.checked)"><span class="slider"></span></label></div>
+<div class="toggle-row"><span>Anti check</span><label class="switch"><input type="checkbox" onchange="toggle('Anti check',this.checked)"><span class="slider"></span></label></div>
+<div class="toggle-row"><span>Antiband</span><label class="switch"><input type="checkbox" onchange="toggle('Antiband',this.checked)"><span class="slider"></span></label></div>
+</div>
+</div>
+
+<script>
+let toastTimeout,countdownInterval;
+function toast(msg){const t=document.getElementById("toast");t.innerText=msg;t.style.opacity="1";if(toastTimeout) clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>{t.style.opacity="0";},3000);}
+function toggle(name,status){toast(name+(status?" bật ✅":" tắt ❌"));}
+
+async function login(){
+  let key=document.getElementById("loginKey").value.trim();
+  if(!key){toast("Nhập key!");return;}
+
+  try{
+    let res7=await fetch("https://YOUR_GITHUB_USER.github.io/panel/key7day.json");
+    let key7day=await res7.json();
+    let resper=await fetch("https://YOUR_GITHUB_USER.github.io/panel/keypermanent.json");
+    let keyper=await resper.json();
+
+    let keyData=key7day.find(k=>k.code===key) || keyper.find(k=>k.code===key);
+
+    if(!keyData){toast("Sai key ❌");return;}
+    if(keyData.expire!=="permanent" && Date.now()>keyData.expire){toast("Key đã hết hạn ⛔");return;}
+    openPanel(keyData);
+  }catch(e){
+    toast("Lỗi fetch key ❌");
+    console.error(e);
+  }
+}
+
+function openPanel(keyData){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("panelBox").style.display="block";
+    updateExpire(keyData);
+}
+
+function updateExpire(keyData){
+    if(countdownInterval) clearInterval(countdownInterval);
+    if(keyData.expire==="permanent"){document.getElementById("expireText").innerText="Key vĩnh viễn 👑";return;}
+    function update(){let diff=keyData.expire-Date.now();
+        if(diff<=0){clearInterval(countdownInterval);document.getElementById("expireText").innerText="Key đã hết hạn ⛔";toast("Key đã hết hạn ⛔");return;}
+        let h=Math.floor(diff/3600000);
+        let m=Math.floor((diff%3600000)/60000);
+        let s=Math.floor((diff%60000)/1000);
+        document.getElementById("expireText").innerText=`Còn hạn: ${h}h ${m}m ${s}s`;
+    }
+    update();countdownInterval=setInterval(update,1000);
+}
+</script>
+</body>
+</html>
